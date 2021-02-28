@@ -1,0 +1,8 @@
+{
+  "name": "kakeibokun",
+  "version": "1.0.0",
+  "main": "server.ts",
+  "repository": "https://github.com/butsuli-shine/kakeibokun",
+  "author": "butsuli-shine",
+  "license": "MIT"
+}
