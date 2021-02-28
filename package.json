@@ -4,5 +4,9 @@
   "main": "server.ts",
   "repository": "https://github.com/butsuli-shine/kakeibokun",
   "author": "butsuli-shine",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@line/bot-sdk": "^7.2.0",
+    "express": "^4.17.1"
+  }
 }
