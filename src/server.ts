@@ -32,7 +32,7 @@ app.post('/webhook', line.middleware(config), (req: any, res: any) => {
       }
     )
     .then((response: AxiosResponse<any>) => {
-      console.log(Buffer.from(response.data, 'binary').toString('base64'));
+      const result = Buffer.from(response.data, 'binary').toString('base64');
     })
     .catch((error: AxiosResponse<any>) => {
       console.log(error);
