@@ -1,15 +1,30 @@
 {
   "name": "kakeibokun",
   "version": "1.0.0",
-  "main": "server.ts",
+  "main": "src/server.ts",
   "repository": "https://github.com/butsuli-shine/kakeibokun",
   "author": "butsuli-shine",
   "license": "MIT",
   "dependencies": {
     "@line/bot-sdk": "^7.2.0",
+    "axios": "^0.21.1",
     "express": "^4.17.1"
   },
   "devDependencies": {
-    "ngrok": "^3.4.0"
+    "@types/node": "^14.11.2",
+    "gts": "^3.1.0",
+    "ngrok": "^3.4.0",
+    "typescript": "^4.0.3"
+  },
+  "scripts": {
+    "tonnel": "ngrok http 3005",
+    "start": "node build/src/server.js",
+    "lint": "gts lint",
+    "clean": "gts clean",
+    "compile": "tsc",
+    "fix": "gts fix",
+    "prepare": "yarn run compile",
+    "pretest": "yarn run compile",
+    "posttest": "yarn run lint"
   }
 }
