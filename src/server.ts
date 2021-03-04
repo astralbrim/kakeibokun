@@ -4,7 +4,6 @@ const axiosBase = require('axios');
 const line = require('@line/bot-sdk');
 const PORT = process.env.PORT || 3005;
 const config = require('./config');
-const BASE_URL = 'https://api-data.line.me/v2/bot/message';
 
 const app = express();
 const getImageEndpoint = axiosBase.create({
@@ -21,22 +20,30 @@ const postMessageEndpoint = axiosBase.create({
 });
 
 console.log('------server is running------');
-app.post('/webhook', line.middleware(config), (req: any, res: any) => {
+app.post('/webhook', line.middleware(config), (req: any) => {
   console.log('------POSTED FROM LINE------');
+  getImage(req, sendMessage);
+});
+
+const getImage = (req: any, afterGetFunction: Function) => {
   getImageEndpoint
-    .get(BASE_URL + '/' + req.body.events[0].message.id + '/content', {
-      responseType: 'arraybuffer',
-    })
+    .get(
+      'https://api-data.line.me/v2/bot/message/' +
+        req.body.events[0].message.id +
+        '/content',
+      {
+        responseType: 'arraybuffer',
+      }
+    )
     .then((response: AxiosResponse<any>) => {
       console.log('------GOT IMAGE------');
       const result = Buffer.from(response.data, 'binary').toString('base64');
-      sendMessage(result, req, [{type: 'text', text: 'Hello'}]);
+      afterGetFunction(result, req, [{type: 'text', text: 'Hello'}]);
     })
     .catch((error: AxiosResponse<any>) => {
       console.error(error);
     });
-});
-
+};
 const sendMessage = (
   result: string,
   req: any,
@@ -47,7 +54,7 @@ const sendMessage = (
       replyToken: req.body.events[0].replyToken,
       messages: messages,
     })
-    .then((result: AxiosResponse<any>) => {
+    .then(() => {
       console.log('------POSTED MESSAGE TO LINE------');
     })
     .catch((error: AxiosResponse<any>) => {
