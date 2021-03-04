@@ -82,7 +82,7 @@ const postImageText = (image: string) => {
           },
           features: [
             {
-              type: 'LABEL_DETECTION',
+              type: 'TEXT_DETECTION',
             },
           ],
         },
