@@ -44,40 +44,42 @@ const api = (req: any) => {
     )
     .then((getImageResponse: AxiosResponse<any>) => {
       console.log('------GOT IMAGE------');
-      const result = Buffer.from(getImageResponse.data, 'binary').toString('base64');
+      const result = Buffer.from(getImageResponse.data, 'binary').toString(
+        'base64'
+      );
       postImageEndpoint
-          .post('https://vision.googleapis.com/v1/images:annotate', {
-            requests: [
-              {
-                image: {
-                  content: result,
-                },
-                features: [
-                  {
-                    type: 'TEXT_DETECTION',
-                  },
-                ],
+        .post('https://vision.googleapis.com/v1/images:annotate', {
+          requests: [
+            {
+              image: {
+                content: result,
               },
-            ],
-          })
-          .then((postImageResponse: AxiosResponse<any>) => {
-            postMessageEndpoint
-                .post('https://api.line.me/v2/bot/message/reply', {
-                  replyToken: req.body.events[0].replyToken,
-                  messages: [
-                    {
-                      type: "text",
-                      text: postImageResponse.data.responses[0].textAnnotations
-                    }
-                  ],
-                })
-                .then(() => {
-                  console.log('------POSTED MESSAGE TO LINE------');
-                })
-                .catch((error: AxiosResponse<any>) => {
-                  console.log(error);
-                });
-          });
+              features: [
+                {
+                  type: 'TEXT_DETECTION',
+                },
+              ],
+            },
+          ],
+        })
+        .then((postImageResponse: AxiosResponse<any>) => {
+          postMessageEndpoint
+            .post('https://api.line.me/v2/bot/message/reply', {
+              replyToken: req.body.events[0].replyToken,
+              messages: [
+                {
+                  type: 'text',
+                  text: postImageResponse.data.responses[0].textAnnotations,
+                },
+              ],
+            })
+            .then(() => {
+              console.log('------POSTED MESSAGE TO LINE------');
+            })
+            .catch((error: AxiosResponse<any>) => {
+              console.log(error);
+            });
+        });
     })
     .catch((error: AxiosResponse<any>) => {
       console.error(error);
