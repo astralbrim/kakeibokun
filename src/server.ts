@@ -29,10 +29,10 @@ const postImageEndpoint = axiosBase.create({
 console.log('------server is running------');
 app.post('/webhook', line.middleware(config.line), (req: any) => {
   console.log('------POSTED FROM LINE------');
-  getImage(req, [postImageText, sendMessage]);
+  api(req);
 });
 
-const getImage = (req: any, afterGetFunction: [Function, Function]) => {
+const api = (req: any) => {
   getImageEndpoint
     .get(
       'https://api-data.line.me/v2/bot/message/' +
@@ -42,54 +42,45 @@ const getImage = (req: any, afterGetFunction: [Function, Function]) => {
         responseType: 'arraybuffer',
       }
     )
-    .then((response: AxiosResponse<any>) => {
+    .then((getImageResponse: AxiosResponse<any>) => {
       console.log('------GOT IMAGE------');
-      const result = Buffer.from(response.data, 'binary').toString('base64');
-      afterGetFunction[0](result);
-      afterGetFunction[1](result, req, [
-        {type: 'text', text: '田村ンゴがうんちぶり子したンゴ！'},
-      ]);
+      const result = Buffer.from(getImageResponse.data, 'binary').toString('base64');
+      postImageEndpoint
+          .post('https://vision.googleapis.com/v1/images:annotate', {
+            requests: [
+              {
+                image: {
+                  content: result,
+                },
+                features: [
+                  {
+                    type: 'TEXT_DETECTION',
+                  },
+                ],
+              },
+            ],
+          })
+          .then((postImageResponse: AxiosResponse<any>) => {
+            postMessageEndpoint
+                .post('https://api.line.me/v2/bot/message/reply', {
+                  replyToken: req.body.events[0].replyToken,
+                  messages: [
+                    {
+                      type: "text",
+                      text: postImageResponse.data.responses[0].textAnnotations
+                    }
+                  ],
+                })
+                .then(() => {
+                  console.log('------POSTED MESSAGE TO LINE------');
+                })
+                .catch((error: AxiosResponse<any>) => {
+                  console.log(error);
+                });
+          });
     })
     .catch((error: AxiosResponse<any>) => {
       console.error(error);
-    });
-};
-const sendMessage = (
-  result: string,
-  req: any,
-  messages: [{type: string; text: string}]
-) => {
-  postMessageEndpoint
-    .post('https://api.line.me/v2/bot/message/reply', {
-      replyToken: req.body.events[0].replyToken,
-      messages: messages,
-    })
-    .then(() => {
-      console.log('------POSTED MESSAGE TO LINE------');
-    })
-    .catch((error: AxiosResponse<any>) => {
-      console.log(error);
-    });
-};
-
-const postImageText = (image: string) => {
-  postImageEndpoint
-    .post('https://vision.googleapis.com/v1/images:annotate', {
-      requests: [
-        {
-          image: {
-            content: image,
-          },
-          features: [
-            {
-              type: 'TEXT_DETECTION',
-            },
-          ],
-        },
-      ],
-    })
-    .then((result: AxiosResponse<any>) => {
-      console.log(result.data.responses[0].textAnnotations);
     });
 };
 
